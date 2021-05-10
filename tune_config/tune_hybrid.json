@@ -1,0 +1,18 @@
+{
+  "network": ["Hybrid"],
+  "model_params": [
+    {"embedding_dim": 512, "hidden_layers": 3},
+    {"embedding_dim": 512, "hidden_layers": 5},
+    {"embedding_dim": 1024, "hidden_layers": 3},
+    {"embedding_dim": 1024, "hidden_layers": 5}
+  ],
+  "lr": [0.005, 0.05],
+  "loss": {"function":  "focal_loss"},
+  "val_fraction": 0.2,
+  "batch_size": [32],
+  "num_epochs": 10,
+  "objective_metric": "mcc",
+  "early_stop_count": 3,
+  "early_stop_ratio": 0.1,
+  "seed": 0
+}
