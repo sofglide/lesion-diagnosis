@@ -42,7 +42,7 @@ class HAM10000(td.Dataset):
         self.data_dir = data_dir
         self.sampling_list = sampling_list
         self.image_paths_dict = get_image_paths_dict(self.data_dir)
-        self.metadata = read_metadata(self.data_dir)
+        self.metadata = read_metadata(self.data_dir).loc[sampling_list]
         self.class_map_dict = get_class_map_dict(self.data_dir)
         self.transforms = get_transforms(is_eval=is_eval, distrib_moments=distrib_moments, image_size=image_size)
         self.images = _HAM10000(self.sampling_list, self.image_paths_dict).cache().map(self.transforms)

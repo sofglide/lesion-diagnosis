@@ -69,9 +69,7 @@ def run_experiment(
         loss=loss,
     )
 
-    save_predictions(
-        model=net, batch_size=batch_size, val_fraction=val_fraction, image_size=image_size, random_seed=seed
-    )
+    save_predictions(model=net, train_loader=train_loader, val_loader=val_loader, batch_size=batch_size)
     logger.info(f"best validation {objective_metric} for experiment: {best_valid_metrics}")
     logger.info("experiment: END")
 

@@ -25,8 +25,8 @@ def get_data_loaders(
     num_classes = train_set.get_num_classes()
 
     train_loader: DataLoader = DataLoader(
-        train_set, batch_size=batch_size, sampler=train_sampler, num_workers=4, drop_last=True
+        train_set, batch_size=batch_size, sampler=train_sampler, num_workers=4, drop_last=False
     )
-    val_loader: DataLoader = DataLoader(val_set, batch_size=batch_size, num_workers=4, drop_last=True)
+    val_loader: DataLoader = DataLoader(val_set, batch_size=batch_size, num_workers=4, drop_last=False)
 
     return train_loader, val_loader, num_classes
