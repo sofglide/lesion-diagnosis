@@ -8,6 +8,7 @@ pytest==6.2.*
 
 # src           # these versions are incompatible and have been deactivated
 bokeh
+opencv-python
 hiddenlayer
 hyperopt
 kaggle
@@ -22,6 +23,7 @@ torch
 torchdata
 torchvision
 torchviz
+tqdm
 
 # convenience
 ipykernel

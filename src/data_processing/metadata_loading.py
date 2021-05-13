@@ -1,16 +1,17 @@
 """
 metadata loading
 """
-from pathlib import Path
 
 import pandas as pd
 
+from config import config
 
-def read_metadata(data_dir: Path) -> pd.DataFrame:
+
+def read_metadata() -> pd.DataFrame:
     """
     Read meta data file using Pandas
-    :param data_dir:
     :return:
     """
-    meta_data = pd.read_csv(data_dir / "HAM10000_metadata.csv", index_col="image_id")
-    return meta_data
+    data_dir = config.get_data_dir()
+    metadata = pd.read_csv(data_dir / "HAM10000_metadata.csv", index_col="image_id", dtype={"dx": "category"})
+    return metadata

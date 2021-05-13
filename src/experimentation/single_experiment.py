@@ -4,10 +4,14 @@ entry point for running experiments
 import json
 from typing import Any, Dict, Optional, Union
 
+import numpy as np
+import torch
+
 from config import config
 from data_processing.data_loading import get_data_loaders
 from networks.model_selection import get_model
-from saving.data_params import save_weights_and_mappings
+from saving.checkpoints import load_best_checkpoint
+from saving.data_params import save_mappings
 from saving.predictions import save_predictions
 from training.training_manager import start_training
 from utils.logging import get_logger
@@ -44,13 +48,18 @@ def run_experiment(
     :return:
     """
     logger.info("experiment: START")
-    image_size = config.get_model_size("Resnet") if network == "Resnet" else None
+
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+
+    image_size = config.get_model_size(network)
     train_loader, val_loader, num_classes = get_data_loaders(
         batch_size=batch_size, val_fraction=val_fraction, image_size=image_size, random_seed=seed
     )
 
     # noinspection PyUnresolvedReferences
-    save_weights_and_mappings(train_loader.dataset.get_weights(), train_loader.dataset.class_map_dict)  # type: ignore
+    save_mappings(train_loader.dataset.class_map_dict)  # type: ignore
 
     model_params_dict = json.loads(model) if isinstance(model, str) else model
 
@@ -68,6 +77,9 @@ def run_experiment(
         optimizer_params=optimizer_params,
         loss=loss,
     )
+
+    best_model_params = load_best_checkpoint()["model"]
+    net.load_state_dict(best_model_params)
 
     save_predictions(model=net, train_loader=train_loader, val_loader=val_loader, batch_size=batch_size)
     logger.info(f"best validation {objective_metric} for experiment: {best_valid_metrics}")

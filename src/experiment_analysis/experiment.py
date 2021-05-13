@@ -15,8 +15,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 from torch import nn
 
 from config import config
-from networks.resnet import Resnet
-from networks.simple_cnn import SimpleCNN
+from networks.model_selection import get_model
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -37,7 +36,6 @@ class Experiment:
         self.train, self.valid = load_experiment_predictions(path)
         self.arguments = load_experiment_arguments(path)
         self.model: Optional[nn.Module] = None
-        self.class_weights = np.load(path / config.get("DEFAULT", "class_weight_file"))
         with open(path / config.get("DEFAULT", "class_map_file"), "r") as fp:
             self.class_map = json.load(fp)
 
@@ -150,15 +148,10 @@ def load_best_model(path: Path, net: str, model_params: Dict[str, Any]) -> nn.Mo
     :param model_params:
     :return:
     """
+    model = get_model(net, num_classes=config.get_num_classes(), model_params=model_params)
     model_state = torch.load(path / "model_best.pth.tar")
-    if net == "SimpleCNN":
-        model: nn.Module = SimpleCNN(num_classes=config.get_num_classes(), params=model_params)
-    elif net == "Resnet":
-        model = Resnet(num_classes=config.get_num_classes())
-    else:
-        raise ValueError(f"unknown net {net}")
-    # FIXME when loading model complains about "Missing key(s) in state_dict"
     model.load_state_dict(model_state["model"])
+    # FIXME when loading model complains about "Missing key(s) in state_dict"
     return model
 
 

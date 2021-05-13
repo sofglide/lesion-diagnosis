@@ -33,7 +33,7 @@ def execute() -> None:
 @click.option("--batch-size", type=click.INT, default=32, help="batch-size to use")
 @click.option("--network", type=click.Choice(model_list), default="SimpleCNN", help="network architecture")
 @click.option("--model-params", type=click.STRING, default="{}", help="network parameters")
-@click.option("--lr", type=click.FLOAT, default=0.0001, help="optimizer learning rate")
+@click.option("--lr", type=click.FLOAT, default=0.001, help="optimizer learning rate")
 @click.option("--loss", type=click.STRING, default='{"function": "cross_entropy"}', help="loss function")
 @click.option("--num-epochs", type=click.INT, default=10, help="number of training epochs")
 @click.option(

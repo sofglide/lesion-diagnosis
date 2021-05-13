@@ -1,9 +1,9 @@
 """
 model training
 """
+import math
 from typing import Any, Dict, Optional, Tuple
 
-import numpy as np
 from torch import nn
 from torch.utils.data import DataLoader
 
@@ -23,7 +23,6 @@ def train_model(
     epoch: int,
     batch_size: int,
     train_loader: DataLoader,
-    weight: Optional[np.ndarray] = None,
     optimizer_params: Optional[Dict[str, float]] = None,
     loss_params: Optional[Dict[str, Any]] = None,
 ) -> Tuple[float, Dict[str, float]]:
@@ -33,7 +32,6 @@ def train_model(
     :param epoch:
     :param batch_size:
     :param train_loader:
-    :param weight:
     :param optimizer_params:
     :param loss_params:
     :return:
@@ -46,10 +44,10 @@ def train_model(
     train_loss = 0
     metrics_val: Dict[str, float] = {}
     train_metrics = ImbalancedMetrics()
-    n_batches = len(train_loader.dataset) // batch_size  # type: ignore
+    n_batches = math.ceil(len(train_loader.dataset) / batch_size)  # type: ignore
 
     optimizer = get_optimizer(model, optimizer_params)
-    criterion = get_criterion(loss_params, weight)
+    criterion = get_criterion(loss_params)
 
     for batch_idx, (inputs, targets) in enumerate(train_loader):
         inputs, targets = inputs.to(device), targets.to(device)
@@ -63,7 +61,7 @@ def train_model(
 
         _, predicted = outputs.max(1)
 
-        train_metrics.update(targets.cpu(), predicted.cpu())
+        train_metrics.update(targets, predicted)
         metrics_val = train_metrics.eval()
 
         metric_str = get_metrics_string(metrics_val)

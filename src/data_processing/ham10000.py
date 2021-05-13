@@ -1,18 +1,18 @@
 """
 Image dataset class
 """
-from pathlib import Path
+from functools import cached_property
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+import pandas as pd
 import torch
 import torchdata as td
 from PIL import Image
 
-from data_processing.class_mapping import get_class_map_dict, get_class_weights
-from data_processing.image_processing import get_image_paths_dict
+from config import config
+from data_processing.class_mapping import get_class_map_dict
 from data_processing.image_transforms import get_transforms
-from data_processing.metadata_loading import read_metadata
 
 
 class HAM10000(td.Dataset):
@@ -23,50 +23,39 @@ class HAM10000(td.Dataset):
 
     def __init__(
         self,
-        data_dir: Path,
+        metadata: pd.DataFrame,
         sampling_list: List[str],
+        image_size: Tuple[int, int],
         is_eval: bool = False,
-        distrib_moments: Optional[Dict[str, np.ndarray]] = None,
-        image_size: Optional[int] = None,
+        image_mean_std: Optional[Dict[str, np.ndarray]] = None,
     ) -> None:
         """
         Dataset constructor uses cached dataset before transform
-        :param data_dir: path to images and metadata file
+        :param metadata:
         :param sampling_list: list of image IDs to use
         :param is_eval: if for evaluation, no data augmentation
-        :param distrib_moments: training image distribution mean and std
+        :param image_mean_std: training image distribution mean and std
         :param image_size: image size for network input
         """
         super().__init__()
 
-        self.data_dir = data_dir
         self.sampling_list = sampling_list
-        self.image_paths_dict = get_image_paths_dict(self.data_dir)
-        self.metadata = read_metadata(self.data_dir).loc[sampling_list]
-        self.class_map_dict = get_class_map_dict(self.data_dir)
-        self.transforms = get_transforms(is_eval=is_eval, distrib_moments=distrib_moments, image_size=image_size)
-        self.images = _HAM10000(self.sampling_list, self.image_paths_dict).cache().map(self.transforms)
 
-    def get_labels(self) -> List[str]:
-        """
-        Get labels of dataset and return them as list
-        :return:
-        """
-        return self.metadata.loc[self.sampling_list, "dx"].tolist()
+        self.metadata = metadata.loc[sampling_list]
+        self.transforms = get_transforms(image_size=image_size, is_eval=is_eval, image_mean_std=image_mean_std)
+        self.images = _HAM10000(self.sampling_list).cache().map(self.transforms)
 
-    def get_weights(self) -> np.ndarray:
-        """
-        Compute class weight for imbalanced dataset
-        :return:
-        """
-        return get_class_weights(self.get_labels(), self.get_num_classes(), self.class_map_dict)
+    @cached_property
+    def class_map_dict(self) -> Dict[str, int]:
+        return get_class_map_dict(self.metadata["dx"])
 
-    def get_num_classes(self) -> int:
+    @cached_property
+    def num_classes(self) -> int:
         """
         Get number of classes
         :return:
         """
-        return len(self.class_map_dict)
+        return len(self.metadata["dx"].cat.categories)
 
     def __len__(self) -> int:
         """
@@ -75,14 +64,14 @@ class HAM10000(td.Dataset):
         """
         return len(self.sampling_list)
 
-    def __getitem__(self, index: int) -> Tuple[torch.Tensor, int]:
+    def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Get item.
         :param index:
         :return: tuple with image and label
         """
         image_id = self.sampling_list[index]
-        label = self.class_map_dict[self.metadata.loc[image_id, "dx"]]
+        label = torch.tensor(self.metadata["dx"].cat.codes.loc[image_id], dtype=torch.long)  # pylint: disable=E1102
         img = self.images[index]
         return img, label
 
@@ -93,20 +82,15 @@ class _HAM10000(td.Dataset):
     cached images before transforms
     """
 
-    def __init__(
-        self,
-        sampling_list: List[str],
-        image_paths_dict: Dict[str, Path],
-    ) -> None:
+    def __init__(self, sampling_list: List[str]) -> None:
         """
 
         :param sampling_list:
-        :param image_paths_dict:
         """
         super().__init__()
 
         self.sampling_list = sampling_list
-        self.image_paths_dict = image_paths_dict
+        self.data_dir = config.get_data_dir()
 
     def __len__(self) -> int:
         """
@@ -122,6 +106,6 @@ class _HAM10000(td.Dataset):
         :return:
         """
         image_id = self.sampling_list[index]
-        img = Image.open(self.image_paths_dict.get(image_id))
+        img = Image.open((self.data_dir / image_id).with_suffix(".jpg"))
 
         return img

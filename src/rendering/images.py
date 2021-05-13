@@ -8,7 +8,6 @@ from matplotlib import pyplot as plt
 from PIL import Image
 
 from config import config
-from data_processing.image_processing import get_image_paths_dict
 
 
 def show_images(image_ids: List[str], cols: int = 1, titles: Optional[List[str]] = None) -> None:
@@ -44,6 +43,5 @@ def load_image(image_id: str) -> np.ndarray:
     :return:
     """
     data_dir = config.get_data_dir()
-    image_paths_dict = get_image_paths_dict(data_dir)
-    image_path = image_paths_dict[image_id]
+    image_path = (data_dir / image_id).with_suffix(".jpg")
     return np.array(Image.open(image_path))

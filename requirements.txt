@@ -233,6 +233,7 @@ numpy==1.20.2
     #   bokeh
     #   hyperopt
     #   matplotlib
+    #   opencv-python
     #   pandas
     #   ray
     #   scikit-learn
@@ -247,6 +248,8 @@ opencensus-context==0.1.2
     # via opencensus
 opencensus==0.7.12
     # via ray
+opencv-python==4.5.2.52
+    # via -r requirements.in
 packaging==20.9
     # via
     #   bleach
@@ -440,6 +443,7 @@ tornado==6.1
     #   terminado
 tqdm==4.60.0
     # via
+    #   -r requirements.in
     #   hyperopt
     #   kaggle
 traitlets==5.0.5
