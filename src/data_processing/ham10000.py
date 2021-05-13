@@ -1,7 +1,6 @@
 """
 Image dataset class
 """
-from functools import cached_property
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -45,11 +44,11 @@ class HAM10000(td.Dataset):
         self.transforms = get_transforms(image_size=image_size, is_eval=is_eval, image_mean_std=image_mean_std)
         self.images = _HAM10000(self.sampling_list).cache().map(self.transforms)
 
-    @cached_property
+    @property
     def class_map_dict(self) -> Dict[str, int]:
         return get_class_map_dict(self.metadata["dx"])
 
-    @cached_property
+    @property
     def num_classes(self) -> int:
         """
         Get number of classes
