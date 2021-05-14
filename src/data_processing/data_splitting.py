@@ -1,14 +1,13 @@
 """
 Training and validation data splitting
 """
-from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-import torch
+from PIL import Image
 from sklearn.model_selection import StratifiedShuffleSplit
-from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from config import config
 from data_processing.ham10000 import HAM10000
@@ -19,7 +18,7 @@ logger = get_logger(__name__)
 
 
 def split_data(
-    val_fraction: float, image_size: Optional[int] = None, random_seed: Optional[int] = None
+    val_fraction: float, image_size: Tuple[int, int], random_seed: Optional[int] = None
 ) -> Tuple[HAM10000, HAM10000]:
     """
 
@@ -29,25 +28,23 @@ def split_data(
     :return:
     """
     logger.info("==> Preparing data..")
-    data_dir = config.get_data_dir()
-    train_ids, val_ids = create_train_val_split(data_dir, val_fraction=val_fraction, random_seed=random_seed)
+    metadata = read_metadata()
+    train_ids, val_ids = create_train_val_split(metadata, val_fraction=val_fraction, random_seed=random_seed)
 
-    distribution_moments = get_train_data_moments(train_ids, image_size)
+    img_mean_std = get_img_mean_std(train_ids, image_size)
 
-    train_set = HAM10000(
-        data_dir, train_ids, is_eval=False, distrib_moments=distribution_moments, image_size=image_size
-    )
-    val_set = HAM10000(data_dir, val_ids, is_eval=True, distrib_moments=distribution_moments, image_size=image_size)
+    train_set = HAM10000(metadata, train_ids, image_size=image_size, is_eval=False, image_mean_std=img_mean_std)
+    val_set = HAM10000(metadata, val_ids, image_size=image_size, is_eval=True, image_mean_std=img_mean_std)
     return train_set, val_set
 
 
 def create_train_val_split(
-    data_dir: Path, val_fraction: float, random_seed: Optional[int] = None
+    metadata: pd.DataFrame, val_fraction: float, random_seed: Optional[int] = None
 ) -> Tuple[List[str], List[str]]:
     """
     Split data into training and validation sets, based on given fractions
     Images are grouped by 'lesion_id' and only 1 image from each lesion_id is taken
-    :param data_dir:
+    :param metadata:
     :param val_fraction:
     :param random_seed:
     :return:
@@ -55,16 +52,15 @@ def create_train_val_split(
     test_fraction = config.get_test_fraction()
     test_seed = config.get_test_seed()
 
-    metadata = read_metadata(data_dir)
-    image_ids = metadata.groupby("lesion_id").sample(n=1, random_state=random_seed).index.to_numpy()
+    is_duplicated = metadata["lesion_id"].duplicated(keep=False)
+    image_ids = metadata.index.to_numpy()
     labels = metadata.loc[image_ids, "dx"].to_numpy()
 
     log_split_distribution(labels, partition="all")
 
     train_val_xy, test_xy = create_stratified_split(  # test_xy is not used, in this phase, kept for later testing
-        image_ids, labels, test_size=test_fraction, random_state=test_seed
+        image_ids[~is_duplicated], labels[~is_duplicated], test_size=test_fraction, random_state=test_seed
     )
-
     log_split_distribution(test_xy["y"], partition="test")
 
     train_xy, val_xy = create_stratified_split(
@@ -73,6 +69,9 @@ def create_train_val_split(
         test_size=val_fraction,
         random_state=random_seed,
     )
+
+    train_xy["X"] = np.concatenate([train_xy["X"], image_ids[is_duplicated]])
+    train_xy["y"] = np.concatenate([train_xy["y"], labels[is_duplicated]])
 
     log_split_distribution(train_xy["y"], partition="train")
     log_split_distribution(val_xy["y"], partition="valid")
@@ -108,32 +107,35 @@ def log_split_distribution(labels: np.ndarray, partition: str) -> None:
     """
     label_distribution = pd.Series(labels).value_counts(normalize=True).sort_index().to_dict()
     distribution_str = {key: f"{val*100:2.0f} %" for key, val in label_distribution.items()}
-    logger.info(f"partition '{partition:6s}': {distribution_str}")
+    logger.info(f"partition '{partition:6s}': size: {len(labels)} | distribution: {distribution_str}")
 
 
-def get_train_data_moments(train_ids: List[str], image_size: Optional[int] = None) -> Dict[str, np.ndarray]:
+def get_img_mean_std(train_ids: List[str], image_size: Tuple[int, int]) -> Dict[str, np.ndarray]:
     """
-    Get train data moments for normalization
+    Get train data mean and std for normalization
     :param train_ids:
     :param image_size:
     :return:
     """
     data_dir = config.get_data_dir()
-    normalization_train_set = HAM10000(data_dir, train_ids, is_eval=True, image_size=image_size)
-    normalization_train_loader: DataLoader = DataLoader(normalization_train_set, batch_size=128, num_workers=1)
-    batch_shape = next(iter(normalization_train_loader))[0].shape
-    norm_ratio = batch_shape[2] * batch_shape[3]
 
-    count, image_sum, image_squared_sum = torch.zeros(3), torch.zeros(3), torch.zeros(3)
-    for images, _ in normalization_train_loader:
-        count += images.shape[0] * norm_ratio
-        image_sum += images.sum(dim=[0, 2, 3])
-        image_squared_sum += torch.pow(images, 2).sum(dim=[0, 2, 3])
+    images = []
+    means, stdevs = [], []
+    for img in tqdm(train_ids):
+        img = Image.open((data_dir / img).with_suffix(".jpg"))
+        if all(image_size):
+            img = img.resize(image_size)
+        img_np = np.array(img)
+        images.append(img_np)
 
-    data_moments = {
-        "mean": (image_sum / count).numpy(),
-        "std": torch.sqrt(image_squared_sum / count - torch.pow(image_sum / count, 2)).numpy(),
-    }
+    images_np = np.stack(images, axis=3).astype(np.float32) / 255.0
 
-    logger.info(f"training set channels: {data_moments}")
-    return data_moments
+    for i in range(3):
+        pixels = images_np[:, :, i, :].ravel()
+        means.append(pixels.mean())
+        stdevs.append(pixels.std())
+
+    data_mean_std = {"mean": np.array(means), "std": np.array(stdevs)}
+
+    logger.info(f"training set channels: {data_mean_std}")
+    return data_mean_std

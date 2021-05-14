@@ -17,8 +17,7 @@ def display_random_images(n: int, label: Optional[str] = None, cols: int = 1, ti
     :param title:
     :return:
     """
-    data_dir = config.get_data_dir()
-    metadata = read_metadata(data_dir)
+    metadata = read_metadata()
 
     if label is not None:
         image_ids = metadata.loc[metadata["dx"] == label].sample(n).index.to_list()

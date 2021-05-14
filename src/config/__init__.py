@@ -3,7 +3,7 @@ Global configuration parsing
 """
 from configparser import ConfigParser
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 
 class Config(ConfigParser):
@@ -72,9 +72,6 @@ class Config(ConfigParser):
     def get_npy_file(self) -> Path:
         return self.get_exp_dir() / self.get("DEFAULT", "npy_file")
 
-    def get_class_weight_file(self) -> Path:
-        return self.get_exp_dir() / self.get("DEFAULT", "class_weight_file")
-
     def get_class_map_file(self) -> Path:
         return self.get_exp_dir() / self.get("DEFAULT", "class_map_file")
 
@@ -105,8 +102,9 @@ class Config(ConfigParser):
     def get_test_seed(self) -> int:
         return self.getint("training", "test_seed")
 
-    def get_model_size(self, model: str) -> int:
-        return self.getint(model, "input_size")
+    def get_model_size(self, model: str) -> Tuple[int, int]:
+        image_size = [int(x) for x in self.get("input_size", model.lower()).split(",")]
+        return image_size[0], image_size[1]
 
     def get_num_classes(self) -> int:
         return self.getint("classification", "num_classes")

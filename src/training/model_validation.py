@@ -1,9 +1,9 @@
 """
 model validation
 """
+import math
 from typing import Any, Dict, Optional, Tuple
 
-import numpy as np
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
@@ -26,7 +26,6 @@ def validate_model(
     val_loader: DataLoader,
     best_metrics: Dict[str, float],
     objective_metric: str,
-    weight: Optional[np.ndarray] = None,
     loss_params: Optional[Dict[str, Any]] = None,
 ) -> Tuple[float, Dict[str, float], Dict[str, float]]:
     """
@@ -37,7 +36,6 @@ def validate_model(
     :param val_loader:
     :param best_metrics:
     :param objective_metric:
-    :param weight:
     :param loss_params:
     :return:
     """
@@ -48,8 +46,8 @@ def validate_model(
     batch_idx = 0
     valid_loss = 0
     validation_metrics = ImbalancedMetrics()
-    n_batches = len(val_loader.dataset) // batch_size  # type: ignore
-    criterion = get_criterion(loss_params, weight)
+    n_batches = math.ceil(len(val_loader.dataset) / batch_size)  # type: ignore
+    criterion = get_criterion(loss_params)
 
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(val_loader):

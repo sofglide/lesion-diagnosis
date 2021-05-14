@@ -1,43 +1,31 @@
 """
 calculating predictions at the end of the training
 """
-from typing import Optional
 
 import pandas as pd
 import torch
 from torch import nn
+from torch.utils.data import DataLoader
 
 from config import config
-from data_processing.data_loading import get_data_loaders
 from utils.computing_device import get_device
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
 
 
-def save_predictions(
-    model: nn.Module,
-    batch_size: int,
-    val_fraction: float,
-    image_size: Optional[int] = None,
-    random_seed: Optional[int] = None,
-) -> None:
+def save_predictions(model: nn.Module, train_loader: DataLoader, val_loader: DataLoader, batch_size: int) -> None:
     """
     Save predictions as csv dataframes
     :param model:
+    :param train_loader:
+    :param val_loader:
     :param batch_size:
-    :param val_fraction:
-    :param image_size:
-    :param random_seed:
     :return:
     """
     logger.info("prediction saving: START")
     predictions_message = config.get_prediction_msg()
     target_dir = config.get_exp_dir()
-    train_loader, val_loader, _ = get_data_loaders(
-        batch_size=batch_size, val_fraction=val_fraction, image_size=image_size, random_seed=random_seed
-    )
-
     load_model_best_params(model)
 
     device = get_device()
@@ -53,7 +41,7 @@ def save_predictions(
 
                 logger.info(predictions_message.format(batch_idx + 1, n_batches))
 
-            results = pd.DataFrame(data={"reference": predicted_labels, "predicted": true_labels})
+            results = pd.DataFrame(data={"reference": true_labels, "predicted": predicted_labels})
 
             results.to_csv(target_dir / f"predictions_{phase}.csv", index=False)
     logger.info("prediction saving: END")

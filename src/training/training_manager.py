@@ -44,8 +44,6 @@ def start_training(
     early_stop_count = early_stopping.copy()
     early_stop_count.update({"max_count": early_stop_count["count"], "epochs_since_last_decrease": 0})
 
-    class_weights = train_loader.dataset.get_weights()  # type: ignore
-
     epochs, train_losses, validation_losses = [], [], []
     train_metrics_all, valid_metrics_all = [], []
     best_valid_metrics = {objective_metric: -np.inf}
@@ -57,7 +55,6 @@ def start_training(
             epoch,
             batch_size,
             train_loader=train_loader,
-            weight=class_weights,
             optimizer_params=optimizer_params,
             loss_params=loss,
         )
@@ -69,7 +66,6 @@ def start_training(
             val_loader=val_loader,
             best_metrics=best_valid_metrics,
             objective_metric=objective_metric,
-            weight=class_weights,
             loss_params=loss,
         )
 

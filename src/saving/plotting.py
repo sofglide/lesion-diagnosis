@@ -18,7 +18,7 @@ def create_loss_plot(epochs: List[int], train_losses: List[float], valid_losses:
     :return:
     """
     exp_dir = config.get_exp_dir()
-    plt.figure()
+    fig = plt.figure()
     plt.title("Loss plot")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
@@ -27,6 +27,7 @@ def create_loss_plot(epochs: List[int], train_losses: List[float], valid_losses:
     plt.plot(epochs, valid_losses, "r", marker="o", label="valid loss")
     plt.legend()
     plt.savefig(exp_dir / "loss.png")
+    plt.close(fig)
 
 
 def create_metrics_plots(
@@ -41,7 +42,7 @@ def create_metrics_plots(
     """
     exp_dir = config.get_exp_dir()
     for metric in ImbalancedMetrics.get_metrics():
-        plt.figure()
+        fig = plt.figure()
         plt.title(f"{metric} plot")
         plt.xlabel("Epoch")
         plt.ylabel("Accuracy")
@@ -50,3 +51,4 @@ def create_metrics_plots(
         plt.plot(epochs, [val[metric] for val in valid_metrics], "r", marker="o", label=f"valid {metric}")
         plt.legend()
         plt.savefig(exp_dir / f"{metric}.png")
+        plt.close(fig)
