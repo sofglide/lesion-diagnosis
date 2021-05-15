@@ -6,12 +6,13 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 from PIL import Image
-from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
 from config import config
 from data_processing.ham10000 import HAM10000
 from data_processing.metadata_loading import read_metadata
+from saving.testing import dump_test_set
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -53,49 +54,30 @@ def create_train_val_split(
     test_seed = config.get_test_seed()
 
     is_duplicated = metadata["lesion_id"].duplicated(keep=False)
-    image_ids = metadata.index.to_numpy()
-    labels = metadata.loc[image_ids, "dx"].to_numpy()
+    image_ids = metadata.index
+    labels = metadata.loc[image_ids, "dx"]
 
     log_split_distribution(labels, partition="all")
 
-    train_val_xy, test_xy = create_stratified_split(  # test_xy is not used, in this phase, kept for later testing
-        image_ids[~is_duplicated], labels[~is_duplicated], test_size=test_fraction, random_state=test_seed
+    # test_xy is not used, in this phase, kept for later testing
+    train_val_idx, test_idx = train_test_split(
+        image_ids[~is_duplicated], stratify=labels[~is_duplicated], test_size=test_fraction, random_state=test_seed
     )
-    log_split_distribution(test_xy["y"], partition="test")
+    log_split_distribution(labels[test_idx], partition="test")
 
-    train_xy, val_xy = create_stratified_split(
-        train_val_xy["X"],
-        train_val_xy["y"],
-        test_size=val_fraction,
+    dump_test_set(labels[test_idx])
+
+    train_idx, val_idx = train_test_split(
+        train_val_idx,
+        stratify=labels[train_val_idx],
+        test_size=val_fraction / (1 - test_fraction),
         random_state=random_seed,
     )
+    train_idx = np.concatenate([train_idx, image_ids[is_duplicated]])
+    log_split_distribution(labels[val_idx], partition="valid")
+    log_split_distribution(labels[train_idx], partition="train")
 
-    train_xy["X"] = np.concatenate([train_xy["X"], image_ids[is_duplicated]])
-    train_xy["y"] = np.concatenate([train_xy["y"], labels[is_duplicated]])
-
-    log_split_distribution(train_xy["y"], partition="train")
-    log_split_distribution(val_xy["y"], partition="valid")
-
-    return train_xy["X"].tolist(), val_xy["X"].tolist()
-
-
-def create_stratified_split(
-    data_x: np.ndarray,
-    data_y: np.ndarray,
-    test_size: Optional[float] = None,
-    random_state: Optional[int] = None,
-) -> Tuple[Dict[str, np.ndarray], Dict[str, np.ndarray]]:
-    """
-    creates stratified splitting of data based on label
-    :param data_x:
-    :param data_y:
-    :param test_size:
-    :param random_state:
-    :return:
-    """
-    splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
-    train_idx, test_idx = next(splitter.split(data_x, data_y))
-    return {"X": data_x[train_idx], "y": data_y[train_idx]}, {"X": data_x[test_idx], "y": data_y[test_idx]}
+    return train_idx.tolist(), val_idx.tolist()
 
 
 def log_split_distribution(labels: np.ndarray, partition: str) -> None:

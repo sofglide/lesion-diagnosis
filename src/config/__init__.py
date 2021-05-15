@@ -99,6 +99,9 @@ class Config(ConfigParser):
     def get_test_fraction(self) -> float:
         return self.getfloat("training", "test_fraction")
 
+    def get_test_set_file(self) -> Path:
+        return self.get_exp_dir() / self.get("DEFAULT", "test_set_file")
+
     def get_test_seed(self) -> int:
         return self.getint("training", "test_seed")
 

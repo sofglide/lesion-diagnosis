@@ -33,15 +33,13 @@ def execute() -> None:
 @click.option("--batch-size", type=click.INT, default=32, help="batch-size to use")
 @click.option("--network", type=click.Choice(model_list), default="SimpleCNN", help="network architecture")
 @click.option("--model-params", type=click.STRING, default="{}", help="network parameters")
-@click.option("--lr", type=click.FLOAT, default=0.001, help="optimizer learning rate")
+@click.option("--lr-extraction", type=click.FLOAT, default=0.001, help="optimizer feature extraction learning rate")
+@click.option("--lr-tuning", type=click.FLOAT, default=0.0001, help="optimizer fine tuning learning rate")
 @click.option("--loss", type=click.STRING, default='{"function": "cross_entropy"}', help="loss function")
-@click.option("--num-epochs", type=click.INT, default=10, help="number of training epochs")
+@click.option("--epochs-extraction", type=click.INT, default=2, help="training epochs for classification layer")
+@click.option("--epochs-tuning", type=click.INT, default=10, help="training epochs for fine tuning")
 @click.option(
     "--objective-metric", type=click.Choice(["f1_score", "mcc"]), default="f1_score", help="metric to maximize"
-)
-@click.option("--early-stop-count", type=click.INT, default=3, help="validation loss increase count to stop experiment")
-@click.option(
-    "--early-stop-ratio", type=click.FLOAT, default=0.1, help="validation loss increase ratio to increment counter"
 )
 @click.option("--seed", type=click.INT, default=0, help="random seed for train/valid split")
 def single_experiment(
@@ -52,12 +50,12 @@ def single_experiment(
     batch_size: int,
     network: str,
     model_params: str,
-    lr: float,
+    lr_extraction: float,
+    lr_tuning: float,
     loss: str,
-    num_epochs: int,
+    epochs_extraction: int,
+    epochs_tuning: int,
     objective_metric: str,
-    early_stop_count: int,
-    early_stop_ratio: float,
     seed: int,
 ) -> None:
     """
@@ -69,12 +67,12 @@ def single_experiment(
     :param batch_size:
     :param network:
     :param model_params:
-    :param lr:
+    :param lr_extraction:
+    :param lr_tuning:
     :param loss:
-    :param num_epochs:
+    :param epochs_extraction:
+    :param epochs_tuning:
     :param objective_metric:
-    :param early_stop_count:
-    :param early_stop_ratio:
     :param seed:
     :return:
     """
@@ -90,26 +88,26 @@ def single_experiment(
         batch_size=batch_size,
         network=network,
         model_params=model_params_dict,
-        lr=lr,
+        lr_extraction=lr_extraction,
+        lr_tuning=lr_tuning,
         loss=loss_dict,
-        num_epochs=num_epochs,
+        epochs_extraction=epochs_extraction,
+        epochs_tuning=epochs_tuning,
         objective_metric=objective_metric,
-        early_stop_count=early_stop_count,
-        early_stop_ratio=early_stop_ratio,
         seed=seed,
     )
 
+    optimizer_params = {"extraction": {"lr": lr_extraction}, "tuning": {"lr": lr_tuning}}
     run_experiment(
         val_fraction=val_fraction,
         batch_size=batch_size,
         network=network,
         model=model_params_dict,
-        optimizer_params={"lr": lr},
+        optimizer_params=optimizer_params,
         loss=loss_dict,
-        num_epochs=num_epochs,
+        epochs_extraction=epochs_extraction,
+        epochs_tuning=epochs_tuning,
         objective_metric=objective_metric,
-        early_stop_count=early_stop_count,
-        early_stop_ratio=early_stop_ratio,
         seed=seed,
     )
 

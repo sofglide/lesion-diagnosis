@@ -1,34 +1,26 @@
 """
-transfer learning from resnet
+transfer learning from densenet
 """
-from torch import Tensor, nn
+from typing import Any, Dict, Optional, Tuple
+
+from torch import nn
 from torchvision import models
 
+from networks.base_net import BaseNet
 
-class Resnet(nn.Module):
+
+class Resnet(BaseNet):
     """
     Resnet model, image size (3, 450, 600)
     """
 
-    def __init__(self, num_classes: int = 1000) -> None:
-        """
+    @property
+    def input_size(self) -> Tuple[int, int]:
+        return 224, 224
 
-        :param num_classes:
-        """
-        super().__init__()
-
-        self.input_size = 224
-
-        self.model = models.resnet34(pretrained=True)
-        for param in self.model.parameters():
-            param.requires_grad = False
-        num_features = self.model.fc.in_features
-        self.model.fc = nn.Linear(num_features, num_classes)
-
-    def forward(self, x: Tensor) -> Tensor:
-        """
-        forward propagation
-        :param x:
-        :return:
-        """
-        return self.model(x)
+    @staticmethod
+    def _get_model(num_classes: int, _: Optional[Dict[str, Any]] = None) -> Tuple[nn.Module, nn.Module]:
+        model = models.densenet121(pretrained=True)
+        num_features = model.fc.in_features
+        model.classifier = nn.Linear(num_features, num_classes)
+        return model, model.fc

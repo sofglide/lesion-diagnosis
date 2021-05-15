@@ -14,13 +14,12 @@ from utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-def save_predictions(model: nn.Module, train_loader: DataLoader, val_loader: DataLoader, batch_size: int) -> None:
+def save_predictions(model: nn.Module, train_loader: DataLoader, val_loader: DataLoader) -> None:
     """
     Save predictions as csv dataframes
     :param model:
     :param train_loader:
     :param val_loader:
-    :param batch_size:
     :return:
     """
     logger.info("prediction saving: START")
@@ -31,15 +30,15 @@ def save_predictions(model: nn.Module, train_loader: DataLoader, val_loader: Dat
     device = get_device()
     with torch.no_grad():
         for phase, data_loader in zip(["train", "val"], [train_loader, val_loader]):
-            n_batches = len(data_loader.dataset) // batch_size  # type: ignore
+            n_batches = len(train_loader)
             true_labels, predicted_labels = [], []
-            for batch_idx, (inputs, targets) in enumerate(data_loader):
+            for batch_idx, (inputs, targets) in enumerate(data_loader, 1):
                 inputs = inputs.to(device)
                 outputs = model(inputs)
                 true_labels.extend(targets.tolist())
                 predicted_labels.extend(outputs.max(1).indices.tolist())
 
-                logger.info(predictions_message.format(batch_idx + 1, n_batches))
+                logger.info(predictions_message.format(batch_idx, n_batches))
 
             results = pd.DataFrame(data={"reference": true_labels, "predicted": predicted_labels})
 

@@ -24,12 +24,12 @@ def save_checkpoint(
     :param backup_as_best:
     :return:
     """
-    best_model_path = config.get_best_model_file()
     target_model_path = target_dir / file_name
 
     target_dir.mkdir(exist_ok=True)
     torch.save(state, target_model_path)
     if backup_as_best:
+        best_model_path = config.get_best_model_file()
         shutil.copyfile(target_model_path, best_model_path)
 
 

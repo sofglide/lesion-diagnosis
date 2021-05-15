@@ -1,7 +1,6 @@
 """
 model training
 """
-import math
 from typing import Any, Dict, Optional, Tuple
 
 from torch import nn
@@ -20,23 +19,22 @@ logger = get_logger(__name__)
 
 def train_model(
     model: nn.Module,
+    phase: str,
     epoch: int,
-    batch_size: int,
     train_loader: DataLoader,
+    loss_params: Dict[str, Any],
     optimizer_params: Optional[Dict[str, float]] = None,
-    loss_params: Optional[Dict[str, Any]] = None,
 ) -> Tuple[float, Dict[str, float]]:
     """
     train model
     :param model:
+    :param phase:
     :param epoch:
-    :param batch_size:
     :param train_loader:
     :param optimizer_params:
     :param loss_params:
     :return:
     """
-    logger.info("Epoch: %d" % epoch)
     status_message = config.get_status_msg()
     device = get_device()
     model.train(mode=True)
@@ -44,12 +42,12 @@ def train_model(
     train_loss = 0
     metrics_val: Dict[str, float] = {}
     train_metrics = ImbalancedMetrics()
-    n_batches = math.ceil(len(train_loader.dataset) / batch_size)  # type: ignore
+    n_batches = len(train_loader)
 
     optimizer = get_optimizer(model, optimizer_params)
     criterion = get_criterion(loss_params)
 
-    for batch_idx, (inputs, targets) in enumerate(train_loader):
+    for batch_idx, (inputs, targets) in enumerate(train_loader, 1):
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
         outputs = model(inputs)
@@ -65,6 +63,6 @@ def train_model(
         metrics_val = train_metrics.eval()
 
         metric_str = get_metrics_string(metrics_val)
-        logger.info(status_message.format(epoch, batch_idx + 1, n_batches, loss / (batch_idx + 1), metric_str))
+        logger.info(status_message.format(phase, epoch, batch_idx, n_batches, loss / batch_idx, metric_str))
 
-    return train_loss / (batch_idx + 1), metrics_val
+    return train_loss / batch_idx, metrics_val

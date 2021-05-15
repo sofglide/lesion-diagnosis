@@ -1,8 +1,7 @@
 """
 model validation
 """
-import math
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 import torch
 from torch import nn
@@ -21,18 +20,18 @@ logger = get_logger(__name__)
 
 def validate_model(
     model: nn.Module,
+    phase: str,
     epoch: int,
-    batch_size: int,
     val_loader: DataLoader,
     best_metrics: Dict[str, float],
     objective_metric: str,
-    loss_params: Optional[Dict[str, Any]] = None,
+    loss_params: Dict[str, Any],
 ) -> Tuple[float, Dict[str, float], Dict[str, float]]:
     """
     validate model
     :param model:
+    :param phase:
     :param epoch:
-    :param batch_size:
     :param val_loader:
     :param best_metrics:
     :param objective_metric:
@@ -46,11 +45,11 @@ def validate_model(
     batch_idx = 0
     valid_loss = 0
     validation_metrics = ImbalancedMetrics()
-    n_batches = math.ceil(len(val_loader.dataset) / batch_size)  # type: ignore
+    n_batches = len(val_loader)
     criterion = get_criterion(loss_params)
 
     with torch.no_grad():
-        for batch_idx, (inputs, targets) in enumerate(val_loader):
+        for batch_idx, (inputs, targets) in enumerate(val_loader, 1):
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
             loss = criterion(outputs, targets)
@@ -62,7 +61,7 @@ def validate_model(
             metrics_val = validation_metrics.eval()
 
             metric_str = get_metrics_string(metrics_val)
-            logger.info(status_message.format(epoch, batch_idx + 1, n_batches, loss / (batch_idx + 1), metric_str))
+            logger.info(status_message.format(phase, epoch, batch_idx, n_batches, loss / batch_idx, metric_str))
 
     # Save checkpoint.
     state = {

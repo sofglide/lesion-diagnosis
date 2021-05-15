@@ -5,7 +5,8 @@ from collections import OrderedDict
 from typing import Any, Dict, List, Optional, Tuple
 
 import torch.nn as nn
-from torch import Tensor
+
+from networks.base_net import BaseNet
 
 INPUT_SIZE = (450, 600)
 DEFAULT_PARAMS = {
@@ -14,29 +15,21 @@ DEFAULT_PARAMS = {
 }
 
 
-class SimpleCNN(nn.Module):
+class SimpleCNN(BaseNet):
     """
     CNN model, image size (3, 450, 600)
     """
 
-    def __init__(self, num_classes: int = 1000, params: Optional[Dict[str, Any]] = None) -> None:
-        """
+    @property
+    def input_size(self) -> Tuple[int, int]:
+        return INPUT_SIZE
 
-        :param num_classes:
-        :param params:
-        """
-        super().__init__()
+    @staticmethod
+    def _get_model(num_classes: int, params: Optional[Dict[str, Any]] = None) -> Tuple[nn.Module, Optional[nn.Module]]:
         if not params:
             params = DEFAULT_PARAMS
-        self.model = get_model_layers(params, num_classes)
-
-    def forward(self, x: Tensor) -> Tensor:
-        """
-        forward propagation
-        :param x:
-        :return:
-        """
-        return self.model(x)
+        model = get_model_layers(params, num_classes)
+        return model, None
 
 
 def get_model_layers(model_params: Dict[str, Any], n_features: int) -> nn.Sequential:
@@ -49,28 +42,28 @@ def get_model_layers(model_params: Dict[str, Any], n_features: int) -> nn.Sequen
     current_size = list(INPUT_SIZE)
     previous_depth = 3
     layers: List[Tuple[str, nn.Module]] = []
-    for i, (depth, kernel, pool, dropout) in enumerate(model_params["conv"]):
-        layers.append((f"conv2d_{i + 1}", nn.Conv2d(previous_depth, depth, kernel_size=kernel, stride=1)))
-        layers.append((f"relu2d_{i + 1}", nn.ReLU()))
+    for i, (depth, kernel, pool, dropout) in enumerate(model_params["conv"], 1):
+        layers.append((f"conv2d_{i}", nn.Conv2d(previous_depth, depth, kernel_size=kernel, stride=1)))
+        layers.append((f"relu2d_{i}", nn.ReLU()))
         if pool:
-            layers.append((f"pool2d_{i + 1}", nn.MaxPool2d(kernel_size=pool)))
+            layers.append((f"pool2d_{i}", nn.MaxPool2d(kernel_size=pool)))
         if dropout:
-            layers.append((f"dropout2d_{i + 1}", nn.Dropout2d(dropout)))
+            layers.append((f"dropout2d_{i}", nn.Dropout2d(dropout)))
 
         _update_current_size(current_size, kernel, pool)
         previous_depth = depth
 
     layers.append(("flatten", nn.Flatten()))
     current_length = previous_depth * current_size[0] * current_size[1]
-    i = -1
-    for i, (hidden_size, dropout) in enumerate(model_params["fc"]):
-        layers.append((f"linear_{i + 1}", nn.Linear(current_length, hidden_size)))
-        layers.append((f"relu1d_{i + 1}", nn.ReLU()))
+    i = 0
+    for i, (hidden_size, dropout) in enumerate(model_params["fc"], 1):
+        layers.append((f"linear_{i}", nn.Linear(current_length, hidden_size)))
+        layers.append((f"relu1d_{i}", nn.ReLU()))
         if dropout:
-            layers.append((f"dropout1d_{i + 1}", nn.Dropout(dropout)))
+            layers.append((f"dropout1d_{i}", nn.Dropout(dropout)))
         current_length = hidden_size
 
-    layers.append((f"linear_{i + 2}", nn.Linear(current_length, n_features)))
+    layers.append((f"linear_{i + 1}", nn.Linear(current_length, n_features)))
     return nn.Sequential(OrderedDict(layers))
 
 

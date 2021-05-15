@@ -1,7 +1,7 @@
 """
 loss functions
 """
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from torch import nn
 
@@ -9,15 +9,12 @@ from training.metrics.loss_functions.focal_loss import FocalLoss
 from utils.computing_device import get_device
 
 
-def get_criterion(loss_params: Optional[Dict[str, Any]] = None) -> nn.Module:
+def get_criterion(loss_params: Dict[str, Any]) -> nn.Module:
     """
     Loss criterion
     :param loss_params:
     :return:
     """
-    if loss_params is None:
-        loss_params = {"function": "cross_entropy"}
-
     loss_function = loss_params.pop("function", "cross_entropy")
 
     if loss_function == "cross_entropy":
