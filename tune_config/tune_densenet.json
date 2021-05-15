@@ -1,13 +1,13 @@
 {
   "network": ["Densenet"],
   "model_params": [0],
-  "lr": [0.0005, 0.01],
+  "lr_extraction": [0.0005, 0.01],
   "lr_tuning": [0.0001],
   "loss": {"function":  "cross_entropy"},
   "val_fraction": 0.2,
   "batch_size": [16, 32, 64],
   "epochs_extraction": 2,
   "epochs_tuning": 10,
-  "objective_metric": "mcc",
+  "objective_metric": "f1_score",
   "seed": 0
 }
