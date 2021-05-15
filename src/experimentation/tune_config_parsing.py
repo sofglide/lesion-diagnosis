@@ -18,7 +18,7 @@ def tune_parse_config_dict(config_raw: Dict[str, Any]) -> Dict[str, Any]:
     parsed_config["model_params"] = tune.choice([json.dumps(p) for p in config_raw["model_params"]])
     for lr in ["lr_extraction", "lr_tuning"]:
         if len(config_raw[lr]) == 1:
-            parsed_config[lr] = config_raw[lr]
+            parsed_config[lr] = config_raw[lr][0]
         else:
             parsed_config[lr] = tune.loguniform(*config_raw[lr])
     parsed_config["loss"] = config_raw["loss"]

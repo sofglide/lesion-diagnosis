@@ -23,6 +23,14 @@ class Hybrid(nn.Module):
     def input_size(self) -> Tuple[int, int]:
         return 224, 224
 
+    @staticmethod
+    def _get_model(num_classes: int, _: Optional[Dict[str, Any]] = None) -> Tuple[nn.Module, nn.Module]:
+        model = _get_embedders(embedding_dim)
+        num_features = model.classifier.in_features
+        model.classifier = nn.Linear(num_features, num_classes)
+        return model, model.classifier
+
+
     def __init__(self, num_classes: int = 1000, params: Optional[Dict[str, Any]] = None) -> None:
         """
 
