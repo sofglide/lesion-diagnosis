@@ -23,7 +23,7 @@ def run_experiment(
     val_fraction: float,
     batch_size: int,
     network: str,
-    model: Optional[Union[str, Dict[str, Any]]],
+    model: Union[str, Dict[str, Any]],
     optimizer_params: Mapping[str, Optional[Dict[str, float]]],
     loss: Dict[str, Any],
     epochs_extraction: int,
