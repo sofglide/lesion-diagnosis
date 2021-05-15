@@ -5,7 +5,7 @@
   "lr_tuning": [0.0001],
   "loss": {"function":  "cross_entropy"},
   "val_fraction": 0.2,
-  "batch_size": [16, 32, 64],
+  "batch_size": [32],
   "epochs_extraction": 2,
   "epochs_tuning": 10,
   "objective_metric": "f1_score",

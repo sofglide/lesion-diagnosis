@@ -45,7 +45,8 @@ def start_training(
     train_metrics_all, valid_metrics_all = [], []
     best_valid_metrics = {objective_metric: -np.inf}
 
-    loss["weight"] = _get_class_weights(train_loader)
+    if loss["function"] == "cross_entropy":
+        loss["weight"] = _get_class_weights(train_loader)
 
     phase_epochs = {"extraction": epochs_extraction, "tuning": epochs_tuning}
 
