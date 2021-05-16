@@ -12,7 +12,6 @@ from utils.logging import log_arguments_to_file, setup_logger
 def setup_experiment_env(
     *,
     exp_name: str,
-    data_dir: str,
     val_fraction: float,
     batch_size: int,
     network: str,
@@ -28,7 +27,6 @@ def setup_experiment_env(
     """
     setup general configuration for experiment
     :param exp_name:
-    :param data_dir:
     :param val_fraction:
     :param batch_size:
     :param network:
@@ -56,7 +54,6 @@ def setup_experiment_env(
         "seed": seed,
     }
     setup_experiment_dir(exp_name)
-    config.set_data_dir(data_dir)
     config.set_log_to_file(True)
     log_arguments_to_file(experiment_dict)
 

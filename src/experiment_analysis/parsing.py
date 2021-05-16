@@ -29,6 +29,5 @@ def load_experiments(path: Path) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    config.set_data_dir("./data")
     experiments_dir = Path("./experiments")
     experiments = load_experiments(experiments_dir)

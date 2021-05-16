@@ -3,7 +3,6 @@ Train classifier on HAM10000 dataset.
 """
 import json
 import shutil
-from pathlib import Path
 
 import click
 from kaggle import KaggleApi
@@ -26,7 +25,6 @@ def execute() -> None:
 
 
 @execute.command(help="Run a single experiment")
-@click.option("--data-dir", type=click.Path(), default="./data", help="path to data")
 @click.option("--val-fraction", type=click.FLOAT, default=0.2, help="fraction of dataset to use for validation")
 @click.option("--exp-name", type=click.STRING, default="baseline", help="name of experiment")
 @click.option("--batch-size", type=click.INT, default=32, help="batch-size to use")
@@ -42,7 +40,6 @@ def execute() -> None:
 )
 @click.option("--seed", type=click.INT, default=0, help="random seed for train/valid split")
 def single_experiment(
-    data_dir: str,
     val_fraction: float,
     exp_name: str,
     batch_size: int,
@@ -58,7 +55,6 @@ def single_experiment(
 ) -> None:
     """
     run a single experiment
-    :param data_dir:
     :param val_fraction:
     :param exp_name:
     :param batch_size:
@@ -79,7 +75,6 @@ def single_experiment(
 
     setup_experiment_env(
         exp_name=exp_name,
-        data_dir=data_dir,
         val_fraction=val_fraction,
         batch_size=batch_size,
         network=network,
@@ -112,33 +107,28 @@ def single_experiment(
 @click.option("--exp-name", type=click.STRING, default="tune_baseline", help="name of experiment")
 @click.option("--config-file", type=click.Path(), help="path to tune config file")
 @click.option("--num-samples", type=click.INT, default=1, help="number of tuning samples")
-@click.option("--data-dir", type=click.Path(), default="./data", help="path to data")
-def tune_experiment(exp_name: str, config_file: str, num_samples: int, data_dir: str) -> None:
+def tune_experiment(exp_name: str, config_file: str, num_samples: int) -> None:
     """
     Run tuning experiment
     :param exp_name:
     :param config_file:
     :param num_samples:
-    :param data_dir:
     :return:
     """
     with open(config.get_tune_config_dir() / config_file, "r") as fp:
         config_raw = json.load(fp)
     tune_config = tune_parse_config_dict(config_raw)
     tune_config["exp_name"] = exp_name
-    tune_config["data_dir"] = str(Path(data_dir).absolute())
     run_tune_experiment(tune_config, num_samples)
 
 
 @execute.command(help="Download and prepare data")
-@click.option("--data-dir", type=click.Path(), default="./data", help="path to data")
-def download_data(data_dir: str) -> None:
+def download_data() -> None:
     """
     Download data to data directory
-    :param data_dir:
     :return:
     """
-    data_dir_path = Path(data_dir)
+    data_dir_path = config.get_data_dir()
     data_dir_path.mkdir(exist_ok=True)
 
     dataset = config.get_dataset_attributes()

@@ -178,7 +178,6 @@ def load_experiment_arguments(path: Path) -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    config.set_data_dir("./data")
     experiments_dir = Path("./experiments")
     experiment_list = list(experiments_dir.iterdir())
 
