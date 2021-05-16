@@ -62,7 +62,6 @@ class Trainable(tune.Trainable):
         self.epochs_tuning = config["epochs_tuning"]
         self.objective_metric = config["objective_metric"]
         self.seed = config["seed"]
-        self.exp_name = config["exp_name"]
 
     def step(self) -> Dict[str, float]:
         """
@@ -81,7 +80,6 @@ class Trainable(tune.Trainable):
             epochs_tuning=self.epochs_tuning,
             objective_metric=self.objective_metric,
             seed=self.seed,
-            exp_name=self.exp_name,
         )
 
         optimizer_params = {"extraction": {"lr": self.lr_extraction}, "tuning": {"lr": self.lr_tuning}}

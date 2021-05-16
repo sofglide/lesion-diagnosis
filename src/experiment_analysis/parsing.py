@@ -6,7 +6,6 @@ from typing import List
 
 import pandas as pd
 
-from config import config
 from experiment_analysis.experiment import Experiment
 
 
