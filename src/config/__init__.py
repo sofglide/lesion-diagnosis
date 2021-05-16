@@ -55,7 +55,7 @@ class Config(ConfigParser):
         return Path(self.get("DEFAULT", "exp_dir"))
 
     def get_data_dir(self) -> Path:
-        return Path(self.get("DEFAULT", "data_dir"))
+        return Path(self.get("DEFAULT", "data_dir")).expanduser()
 
     def get_status_msg(self) -> str:
         return self.get("DEFAULT", "status_message")
