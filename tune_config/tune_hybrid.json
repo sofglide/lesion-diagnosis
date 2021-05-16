@@ -8,7 +8,7 @@
   ],
   "lr_extraction": [0.0005, 0.01],
   "lr_tuning": [0.0001],
-  "loss": {"function":  "focal_loss"},
+  "loss": {"function":  "focal_loss", "alpha":  0.25, "gamma":  2.0},
   "val_fraction": 0.2,
   "batch_size": [32],
   "epochs_extraction": 2,
