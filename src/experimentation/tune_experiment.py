@@ -64,7 +64,6 @@ class Trainable(tune.Trainable):
         self.seed = config["seed"]
         self.exp_name = config["exp_name"]
         self.data_dir = config["data_dir"]
-        self.log_level = config["log_level"]
 
     def step(self) -> Dict[str, float]:
         """
@@ -85,7 +84,6 @@ class Trainable(tune.Trainable):
             seed=self.seed,
             exp_name=self.exp_name,
             data_dir=self.data_dir,
-            log_level=self.log_level,
         )
 
         optimizer_params = {"extraction": {"lr": self.lr_extraction}, "tuning": {"lr": self.lr_tuning}}

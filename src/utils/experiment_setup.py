@@ -13,7 +13,6 @@ def setup_experiment_env(
     *,
     exp_name: str,
     data_dir: str,
-    log_level: str,
     val_fraction: float,
     batch_size: int,
     network: str,
@@ -30,7 +29,6 @@ def setup_experiment_env(
     setup general configuration for experiment
     :param exp_name:
     :param data_dir:
-    :param log_level:
     :param val_fraction:
     :param batch_size:
     :param network:
@@ -60,7 +58,6 @@ def setup_experiment_env(
     setup_experiment_dir(exp_name)
     config.set_data_dir(data_dir)
     config.set_log_to_file(True)
-    config.set_log_level(log_level)
     log_arguments_to_file(experiment_dict)
 
     for logger_name in config.get_loggers():

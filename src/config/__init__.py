@@ -90,9 +90,6 @@ class Config(ConfigParser):
     def get_log_to_file(self) -> bool:
         return self.getboolean("DEFAULT", "log_to_file")
 
-    def set_log_level(self, log_level: str) -> None:
-        self.set("DEFAULT", "log_level", log_level)
-
     def get_log_level(self) -> str:
         return self.get("DEFAULT", "log_level")
 

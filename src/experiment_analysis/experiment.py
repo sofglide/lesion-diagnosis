@@ -71,7 +71,7 @@ class Experiment:
         )
 
     def load_best_metrics(self) -> Tuple[float, float]:
-        best_state = torch.load(self.directory / "model_best.pth.tar")
+        best_state = torch.load(self.directory / "model_best.pth.tar", map_location="cpu")
         return best_state["f1_score"], best_state["f1_score"]
 
     def display_plot(self, plot: str, ax: Optional[AxesImage] = None) -> AxesImage:

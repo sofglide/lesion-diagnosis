@@ -29,7 +29,6 @@ def execute() -> None:
 @click.option("--data-dir", type=click.Path(), default="./data", help="path to data")
 @click.option("--val-fraction", type=click.FLOAT, default=0.2, help="fraction of dataset to use for validation")
 @click.option("--exp-name", type=click.STRING, default="baseline", help="name of experiment")
-@click.option("--log-level", type=click.Choice(["DEBUG", "INFO"]), default="INFO", help="log-level to use")
 @click.option("--batch-size", type=click.INT, default=32, help="batch-size to use")
 @click.option("--network", type=click.Choice(model_list), default="SimpleCNN", help="network architecture")
 @click.option("--model-params", type=click.STRING, default="{}", help="network parameters")
@@ -46,7 +45,6 @@ def single_experiment(
     data_dir: str,
     val_fraction: float,
     exp_name: str,
-    log_level: str,
     batch_size: int,
     network: str,
     model_params: str,
@@ -63,7 +61,6 @@ def single_experiment(
     :param data_dir:
     :param val_fraction:
     :param exp_name:
-    :param log_level:
     :param batch_size:
     :param network:
     :param model_params:
@@ -83,7 +80,6 @@ def single_experiment(
     setup_experiment_env(
         exp_name=exp_name,
         data_dir=data_dir,
-        log_level=log_level,
         val_fraction=val_fraction,
         batch_size=batch_size,
         network=network,
@@ -117,15 +113,13 @@ def single_experiment(
 @click.option("--config-file", type=click.Path(), help="path to tune config file")
 @click.option("--num-samples", type=click.INT, default=1, help="number of tuning samples")
 @click.option("--data-dir", type=click.Path(), default="./data", help="path to data")
-@click.option("--log-level", type=click.Choice(["DEBUG", "INFO"]), default="INFO", help="log-level to use")
-def tune_experiment(exp_name: str, config_file: str, num_samples: int, data_dir: str, log_level: str) -> None:
+def tune_experiment(exp_name: str, config_file: str, num_samples: int, data_dir: str) -> None:
     """
     Run tuning experiment
     :param exp_name:
     :param config_file:
     :param num_samples:
     :param data_dir:
-    :param log_level:
     :return:
     """
     with open(config.get_tune_config_dir() / config_file, "r") as fp:
@@ -133,7 +127,6 @@ def tune_experiment(exp_name: str, config_file: str, num_samples: int, data_dir:
     tune_config = tune_parse_config_dict(config_raw)
     tune_config["exp_name"] = exp_name
     tune_config["data_dir"] = str(Path(data_dir).absolute())
-    tune_config["log_level"] = log_level
     run_tune_experiment(tune_config, num_samples)
 
 
