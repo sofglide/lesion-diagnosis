@@ -6,11 +6,13 @@
     {"embedding_dim": 1024, "hidden_layers": 3},
     {"embedding_dim": 1024, "hidden_layers": 5}
   ],
-  "lr": [0.005, 0.05],
+  "lr_extraction": [0.0005, 0.01],
+  "lr_tuning": [0.0001],
   "loss": {"function":  "focal_loss"},
   "val_fraction": 0.2,
   "batch_size": [32],
-  "num_epochs": 10,
+  "epochs_extraction": 2,
+  "epochs_tuning": 10,
   "objective_metric": "mcc",
   "seed": 0
 }
