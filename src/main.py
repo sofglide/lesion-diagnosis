@@ -126,6 +126,7 @@ def tune_experiment(config_file: str, data_dir: str, num_samples: int) -> None:
 
 
 @execute.command(help="Download and prepare data")
+@click.option("--data-dir", type=click.Path(), default="./data", help="path to data")
 def download_data(data_dir: Optional[str] = None) -> None:
     """
     Download data to data directory
