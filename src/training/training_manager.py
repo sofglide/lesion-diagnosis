@@ -84,12 +84,6 @@ def start_training(
     return best_valid_metrics
 
 
-def _get_phase_optimizer_params(optimizer_params: Optional[Dict[str, float]], phase: str) -> Optional[Dict[str, float]]:
-    if optimizer_params is None:
-        return None
-    return {key: val for key, val in optimizer_params.items() if key.endswith(f"_{phase}")}
-
-
 def _get_class_weights(loader: DataLoader) -> np.ndarray:
     """
     compute class weights
