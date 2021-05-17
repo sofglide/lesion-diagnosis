@@ -72,7 +72,7 @@ def single_experiment(
     :return:
     """
     # pylint: disable=too-many-arguments
-    config.set_data_dir(data_dir)
+    config.set_data_dir(Path(data_dir))
 
     model_params_dict = json.loads(model_params)
     loss_dict = json.loads(loss)
