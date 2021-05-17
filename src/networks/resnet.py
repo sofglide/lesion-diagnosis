@@ -20,7 +20,7 @@ class Resnet(BaseNet):
 
     @staticmethod
     def _get_model(num_classes: int, _: Optional[Dict[str, Any]] = None) -> Tuple[nn.Module, nn.Module]:
-        model = models.densenet121(pretrained=True)
+        model = models.resnet34(pretrained=True)
         num_features = model.fc.in_features
-        model.classifier = nn.Linear(num_features, num_classes)
+        model.fc = nn.Linear(num_features, num_classes)
         return model, model.fc
