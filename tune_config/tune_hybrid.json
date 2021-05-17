@@ -13,6 +13,6 @@
   "batch_size": [32],
   "epochs_extraction": 2,
   "epochs_tuning": 10,
-  "objective_metric": "mcc",
+  "objective_metric": "f1_score",
   "seed": 0
 }
