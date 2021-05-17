@@ -54,6 +54,9 @@ class Config(ConfigParser):
     def get_exp_dir(self) -> Path:
         return Path(self.get("DEFAULT", "exp_dir"))
 
+    def set_data_dir(self, data_dir: Path) -> None:
+        self.set("DEFAULT", "data_dir", str(data_dir))
+
     def get_data_dir(self) -> Path:
         return Path(self.get("DEFAULT", "data_dir")).expanduser()
 

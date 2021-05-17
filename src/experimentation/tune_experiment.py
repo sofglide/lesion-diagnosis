@@ -51,6 +51,8 @@ class Trainable(tune.Trainable):
         :param config:
         :return:
         """
+        data_dir = config["data_dir"]
+        system_config.set_data_dir(data_dir)
         self.network = config["network"]
         self.model_params = config["model_params"]
         self.lr_extraction = config["lr_extraction"]
