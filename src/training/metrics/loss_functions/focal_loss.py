@@ -14,7 +14,7 @@ class FocalLoss(nn.Module):
     focal loss
     """
 
-    def __init__(self, alpha: float = 0.25, gamma: float = 1.0):
+    def __init__(self, alpha: float = 0.25, gamma: float = 2.0):
         """
         constructor
         :param alpha:
@@ -42,7 +42,7 @@ class FocalLoss(nn.Module):
             num_class = 2
         else:
             num_class = input_prob.size(1)
-        binary_target = torch.eye(num_class)[target.squeeze().long()]
+        binary_target = torch.eye(num_class)[target.long()]
         if get_device() == "cuda":
             binary_target = binary_target.cuda()
         binary_target = binary_target.contiguous()

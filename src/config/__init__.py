@@ -54,11 +54,11 @@ class Config(ConfigParser):
     def get_exp_dir(self) -> Path:
         return Path(self.get("DEFAULT", "exp_dir"))
 
-    def set_data_dir(self, data_dir: str) -> None:
-        self.set("DEFAULT", "data_dir", data_dir)
+    def set_data_dir(self, data_dir: Path) -> None:
+        self.set("DEFAULT", "data_dir", str(data_dir))
 
     def get_data_dir(self) -> Path:
-        return Path(self.get("DEFAULT", "data_dir"))
+        return Path(self.get("DEFAULT", "data_dir")).expanduser()
 
     def get_status_msg(self) -> str:
         return self.get("DEFAULT", "status_message")
@@ -90,14 +90,14 @@ class Config(ConfigParser):
     def get_log_to_file(self) -> bool:
         return self.getboolean("DEFAULT", "log_to_file")
 
-    def set_log_level(self, log_level: str) -> None:
-        self.set("DEFAULT", "log_level", log_level)
-
     def get_log_level(self) -> str:
         return self.get("DEFAULT", "log_level")
 
     def get_test_fraction(self) -> float:
         return self.getfloat("training", "test_fraction")
+
+    def get_test_set_file(self) -> Path:
+        return self.get_exp_dir() / self.get("DEFAULT", "test_set_file")
 
     def get_test_seed(self) -> int:
         return self.getint("training", "test_seed")

@@ -6,7 +6,6 @@ from typing import List
 
 import pandas as pd
 
-from config import config
 from experiment_analysis.experiment import Experiment
 
 
@@ -29,6 +28,5 @@ def load_experiments(path: Path) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    config.set_data_dir("./data")
     experiments_dir = Path("./experiments")
     experiments = load_experiments(experiments_dir)

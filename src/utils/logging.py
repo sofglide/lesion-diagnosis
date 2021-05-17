@@ -1,9 +1,10 @@
 """Utility functions."""
 import json
 import logging
-from typing import Any, Dict
+from dataclasses import asdict
 
 from config import config
+from utils.experiment_config import ExperimentConfig
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -49,11 +50,11 @@ def add_log_file_to_logger(logger: logging.Logger, log_formatter: logging.Format
     logger.addHandler(file_handler)
 
 
-def log_arguments_to_file(experiment_dict: Dict[str, Any]) -> None:
+def log_arguments_to_file(experiment_config: ExperimentConfig) -> None:
     """
     Logs experiments arguments to file
-    :param experiment_dict:
+    :param experiment_config:
     :return:
     """
     with open(config.get_args_file(), "w") as fp:
-        json.dump(experiment_dict, fp, indent=2)
+        json.dump(asdict(experiment_config), fp, indent=2)

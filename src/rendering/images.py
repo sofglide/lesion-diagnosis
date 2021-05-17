@@ -23,9 +23,9 @@ def show_images(image_ids: List[str], cols: int = 1, titles: Optional[List[str]]
     if titles is None:
         titles = image_ids
     fig = plt.figure()
-    for n, (image_id, title) in enumerate(zip(image_ids, titles)):
+    for n, (image_id, title) in enumerate(zip(image_ids, titles), 1):
         image = load_image(image_id)
-        a = fig.add_subplot(cols, np.ceil(n_images / float(cols)), n + 1)
+        a = fig.add_subplot(cols, np.ceil(n_images / float(cols)), n)
         if image.ndim == 2:
             plt.gray()
 

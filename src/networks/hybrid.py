@@ -10,12 +10,29 @@ import torch
 from torch import Tensor, nn
 from torchvision import models
 
+from networks.base_net import BaseNet
+
 INPUT_SIZE = 224
 DEFAULT_EMBEDDDING_DIM = 512
 DEFAULT_HIDDEN_LAYERS = 3
 
 
-class Hybrid(nn.Module):
+class Hybrid(BaseNet):
+    """
+    Multiple pretrained models
+    """
+
+    @property
+    def input_size(self) -> Tuple[int, int]:
+        return 224, 224
+
+    @staticmethod
+    def _get_model(num_classes: int, params: Optional[Dict[str, Any]] = None) -> Tuple[nn.Module, nn.Module]:
+        model = _Hybrid(num_classes, params)
+        return model, model.fusion_layers
+
+
+class _Hybrid(nn.Module):
     """
     Resnet model, image size (3, 450, 600)
     """

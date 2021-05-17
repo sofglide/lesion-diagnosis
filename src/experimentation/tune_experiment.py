@@ -51,20 +51,19 @@ class Trainable(tune.Trainable):
         :param config:
         :return:
         """
+        data_dir = config["data_dir"]
+        system_config.set_data_dir(data_dir)
         self.network = config["network"]
         self.model_params = config["model_params"]
-        self.lr = config["lr"]
+        self.lr_extraction = config["lr_extraction"]
+        self.lr_tuning = config["lr_tuning"]
         self.loss = config["loss"]
         self.val_fraction = config["val_fraction"]
         self.batch_size = config["batch_size"]
-        self.num_epochs = config["num_epochs"]
+        self.epochs_extraction = config["epochs_extraction"]
+        self.epochs_tuning = config["epochs_tuning"]
         self.objective_metric = config["objective_metric"]
-        self.early_stop_count = config["early_stop_count"]
-        self.early_stop_ratio = config["early_stop_ratio"]
         self.seed = config["seed"]
-        self.exp_name = config["exp_name"]
-        self.data_dir = config["data_dir"]
-        self.log_level = config["log_level"]
 
     def step(self) -> Dict[str, float]:
         """
@@ -74,31 +73,28 @@ class Trainable(tune.Trainable):
         setup_experiment_env(
             network=self.network,
             model_params=json.loads(self.model_params),
-            lr=self.lr,
+            lr_extraction=self.lr_extraction,
+            lr_tuning=self.lr_tuning,
             loss=self.loss,
             val_fraction=self.val_fraction,
             batch_size=self.batch_size,
-            num_epochs=self.num_epochs,
+            epochs_extraction=self.epochs_extraction,
+            epochs_tuning=self.epochs_tuning,
             objective_metric=self.objective_metric,
-            early_stop_count=self.early_stop_count,
-            early_stop_ratio=self.early_stop_ratio,
             seed=self.seed,
-            exp_name=self.exp_name,
-            data_dir=self.data_dir,
-            log_level=self.log_level,
         )
 
+        optimizer_params = {"extraction": {"lr": self.lr_extraction}, "tuning": {"lr": self.lr_tuning}}
         metrics_values = run_experiment(
             val_fraction=self.val_fraction,
             batch_size=self.batch_size,
             network=self.network,
             model=self.model_params,
-            optimizer_params={"lr": self.lr},
+            optimizer_params=optimizer_params,
             loss=self.loss,
-            num_epochs=self.num_epochs,
+            epochs_extraction=self.epochs_extraction,
+            epochs_tuning=self.epochs_tuning,
             objective_metric=self.objective_metric,
-            early_stop_count=self.early_stop_count,
-            early_stop_ratio=self.early_stop_ratio,
             seed=self.seed,
         )
 

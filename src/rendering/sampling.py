@@ -3,7 +3,6 @@ displaying sample images
 """
 from typing import Optional
 
-from config import config
 from data_processing.metadata_loading import read_metadata
 from rendering.images import show_images
 
@@ -30,5 +29,4 @@ def display_random_images(n: int, label: Optional[str] = None, cols: int = 1, ti
 
 
 if __name__ == "__main__":
-    config.set_data_dir("./data")
     display_random_images(n=3, label=None, title="dx")
