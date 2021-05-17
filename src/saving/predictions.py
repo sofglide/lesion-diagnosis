@@ -30,7 +30,7 @@ def save_predictions(model: nn.Module, train_loader: DataLoader, val_loader: Dat
     device = get_device()
     with torch.no_grad():
         for phase, data_loader in zip(["train", "val"], [train_loader, val_loader]):
-            n_batches = len(train_loader)
+            n_batches = len(data_loader)
             true_labels, predicted_labels = [], []
             for batch_idx, (inputs, targets) in enumerate(data_loader, 1):
                 inputs = inputs.to(device)
