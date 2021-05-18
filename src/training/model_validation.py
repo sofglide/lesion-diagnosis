@@ -42,7 +42,6 @@ def validate_model(
     exp_dir = config.get_exp_dir()
     device = get_device()
     model.eval()
-    batch_idx = 0
     valid_loss = 0
     validation_metrics = ImbalancedMetrics()
     n_batches = len(val_loader)
@@ -55,6 +54,7 @@ def validate_model(
             loss = criterion(outputs, targets)
 
             valid_loss += loss.item()
+
             _, predicted = outputs.max(1)
 
             validation_metrics.update(targets.cpu(), predicted.cpu())
@@ -76,4 +76,4 @@ def validate_model(
     else:
         save_checkpoint(state, exp_dir, backup_as_best=False)
 
-    return valid_loss / (batch_idx + 1), metrics_val, best_metrics
+    return valid_loss / len(val_loader), metrics_val, best_metrics

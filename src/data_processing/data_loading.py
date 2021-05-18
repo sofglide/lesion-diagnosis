@@ -21,9 +21,7 @@ def get_data_loaders(
     """
     train_set, val_set = split_data(val_fraction=val_fraction, image_size=image_size, random_seed=random_seed)
 
-    train_loader: DataLoader = DataLoader(
-        train_set, batch_size=batch_size, shuffle=True, num_workers=2, drop_last=False
-    )
-    val_loader: DataLoader = DataLoader(val_set, batch_size=batch_size, num_workers=2, drop_last=False)
+    train_loader: DataLoader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=2, drop_last=True)
+    val_loader: DataLoader = DataLoader(val_set, batch_size=batch_size, num_workers=2, drop_last=True)
 
     return train_loader, val_loader, train_set.num_classes
