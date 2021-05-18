@@ -38,7 +38,6 @@ def train_model(
     status_message = config.get_status_msg()
     device = get_device()
     model.train(mode=True)
-    batch_idx = 0
     train_loss = 0
     metrics_val: Dict[str, float] = {}
     train_metrics = ImbalancedMetrics()
@@ -65,4 +64,4 @@ def train_model(
         metric_str = get_metrics_string(metrics_val)
         logger.info(status_message.format(phase, epoch, batch_idx, n_batches, loss / batch_idx, metric_str))
 
-    return train_loss / batch_idx, metrics_val
+    return train_loss / len(train_loader), metrics_val
