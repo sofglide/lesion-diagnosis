@@ -8,6 +8,7 @@ from torch.backends import cudnn
 from networks.base_net import BaseNet
 from networks.densenet import Densenet
 from networks.hybrid import Hybrid
+from networks.hybrid_2 import Hybrid2
 from networks.resnet import Resnet
 from networks.simple_cnn import SimpleCNN
 from utils.computing_device import get_device
@@ -34,6 +35,8 @@ def get_model(network: str, num_classes: int, model_params: Optional[Dict[str, A
         net = Densenet(num_classes)
     elif network == "Hybrid":
         net = Hybrid(num_classes, params=model_params)
+    elif network == "Hybrid_2":
+        net = Hybrid2(num_classes, params=model_params)
     else:
         raise ValueError(f"unknown network {network}")
     net = net.to(device)

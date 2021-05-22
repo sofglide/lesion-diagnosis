@@ -18,7 +18,7 @@ from utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-model_list = ["SimpleCNN", "Resnet", "Densenet", "Hybrid"]
+model_list = ["SimpleCNN", "Resnet", "Densenet", "Hybrid", "Hybrid_2"]
 
 
 @click.group()

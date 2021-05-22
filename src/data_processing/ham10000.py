@@ -27,6 +27,7 @@ class HAM10000(td.Dataset):
         image_size: Tuple[int, int],
         is_eval: bool = False,
         image_mean_std: Optional[Dict[str, np.ndarray]] = None,
+        image_copies: int = 1,
     ) -> None:
         """
         Dataset constructor uses cached dataset before transform
@@ -35,11 +36,12 @@ class HAM10000(td.Dataset):
         :param is_eval: if for evaluation, no data augmentation
         :param image_mean_std: training image distribution mean and std
         :param image_size: image size for network input
+        :param image_copies: number image copies to output
         """
         super().__init__()
 
         self.sampling_list = sampling_list
-
+        self.image_copies = image_copies
         self.metadata = metadata.loc[sampling_list]
         self.transforms = get_transforms(image_size=image_size, is_eval=is_eval, image_mean_std=image_mean_std)
         self.images = _HAM10000(self.sampling_list).cache().map(self.transforms)
@@ -71,7 +73,10 @@ class HAM10000(td.Dataset):
         """
         image_id = self.sampling_list[index]
         label = torch.tensor(self.metadata["dx"].cat.codes.loc[image_id], dtype=torch.long)  # pylint: disable=E1102
-        img = self.images[index]
+        if self.image_copies > 1:
+            img = torch.stack([self.images[index] for _ in range(self.image_copies)], dim=0)
+        else:
+            img = self.images[index]
         return img, label
 
 

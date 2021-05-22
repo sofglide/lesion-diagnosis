@@ -2,6 +2,7 @@
 entry point for running experiments
 """
 import json
+import re
 from typing import Any, Dict, Mapping, Optional, Union
 
 import numpy as np
@@ -52,8 +53,16 @@ def run_experiment(
     torch.cuda.manual_seed(seed)
 
     image_size = config.get_model_size(network)
+    if network_copies := re.search(r"_(\d+)$", network):
+        image_copies = int(network_copies[1])
+    else:
+        image_copies = 1
     train_loader, val_loader, num_classes = get_data_loaders(
-        batch_size=batch_size, val_fraction=val_fraction, image_size=image_size, random_seed=seed
+        batch_size=batch_size,
+        val_fraction=val_fraction,
+        image_size=image_size,
+        image_copies=image_copies,
+        random_seed=seed,
     )
 
     # noinspection PyUnresolvedReferences
