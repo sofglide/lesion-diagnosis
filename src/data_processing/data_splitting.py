@@ -19,12 +19,13 @@ logger = get_logger(__name__)
 
 
 def split_data(
-    val_fraction: float, image_size: Tuple[int, int], random_seed: Optional[int] = None
+    val_fraction: float, image_size: Tuple[int, int], image_copies: int = 1, random_seed: Optional[int] = None
 ) -> Tuple[HAM10000, HAM10000]:
     """
 
     :param val_fraction:
     :param image_size:
+    :param image_copies: if a model require multiple augmented copies of the same image, this is the number of copies
     :param random_seed:
     :return:
     """
@@ -34,8 +35,17 @@ def split_data(
 
     img_mean_std = get_img_mean_std(train_ids, image_size)
 
-    train_set = HAM10000(metadata, train_ids, image_size=image_size, is_eval=False, image_mean_std=img_mean_std)
-    val_set = HAM10000(metadata, val_ids, image_size=image_size, is_eval=True, image_mean_std=img_mean_std)
+    train_set = HAM10000(
+        metadata,
+        train_ids,
+        image_size=image_size,
+        is_eval=False,
+        image_mean_std=img_mean_std,
+        image_copies=image_copies,
+    )
+    val_set = HAM10000(
+        metadata, val_ids, image_size=image_size, is_eval=True, image_mean_std=img_mean_std, image_copies=image_copies
+    )
     return train_set, val_set
 
 
