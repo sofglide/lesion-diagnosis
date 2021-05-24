@@ -53,7 +53,8 @@ def run_experiment(
     torch.cuda.manual_seed(seed)
 
     image_size = config.get_model_size(network)
-    if network_copies := re.search(r"_(\d+)$", network):
+    network_copies = re.search(r"_(\d+)$", network)
+    if network_copies:
         image_copies = int(network_copies[1])
     else:
         image_copies = 1
