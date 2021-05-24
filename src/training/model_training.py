@@ -58,7 +58,7 @@ def train_model(
 
         _, predicted = outputs.max(1)
 
-        train_metrics.update(targets, predicted)
+        train_metrics.update(targets.detach(), predicted.detach())
         metrics_val = train_metrics.eval()
 
         metric_str = get_metrics_string(metrics_val)
